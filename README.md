@@ -4,7 +4,6 @@
 
 It implements a 2-layer GRU + additive attention, a 2-layer edge-aware 4-head GATv2-style encoder in pure PyTorch, a node-wise gated fusion, multitask IDS/trust heads, per-capture graph snapshots, benchmark label-derived trust proxy, trust/mitigation state machine, classical baselines, ablations, SHAP and LIME explainers, statistical tools, and an offline mitigation-policy replay. No research metrics are embedded or fabricated.
 
-> **Scope:** The code runs end-to-end on synthetic smoke-test data or properly formatted real TON_IoT/IoT-23 flow data. The replay is **not** live Contiki/Cooja routing enforcement. The manuscript's claimed closed-loop outcomes require additional attack firmware and Cooja project files not supplied with the document. See `simulation/README.md`.
 
 ## Installation
 
