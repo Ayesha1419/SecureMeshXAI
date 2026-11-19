@@ -101,3 +101,26 @@ Every successful experiment produces `model.pt`, `preprocessor.joblib`, `history
 ## Tests and licensing
 
 `pytest` validates shapes, gradients, data handling, policy transitions and an end-to-end training smoke test. A permissive MIT-style license applies to original code in this repository only; dataset and Contiki code retain their own terms.
+
+## Citation
+
+If you use SecureMeshXAI in your research, please cite this software using the following DOI:
+
+**SecureMeshXAI v1.0.0**
+
+Zenodo DOI: https://doi.org/10.5281/zenodo.24373248
+
+### BibTeX
+
+```bibtex
+@software{securemeshxai_2026,
+  author = {Ayesha1419},
+  title = {SecureMeshXAI},
+  year = {2026},
+  version = {1.0.0},
+  publisher = {Zenodo},
+  doi = {10.5281/zenodo.24373248},
+  url = {https://doi.org/10.5281/zenodo.24373248}
+}
+```
+
