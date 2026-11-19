@@ -1,0 +1,102 @@
+# SecureMeshXAI
+
+**Executable research implementation** of the proposed SecureMeshXAI temporal–graph intrusion detection and trust management framework.
+
+It implements a 2-layer GRU + additive attention, a 2-layer edge-aware 4-head GATv2-style encoder in pure PyTorch, a node-wise gated fusion, multitask IDS/trust heads, per-capture graph snapshots, benchmark label-derived trust proxy, trust/mitigation state machine, classical baselines, ablations, SHAP and LIME explainers, statistical tools, and an offline mitigation-policy replay. No research metrics are embedded or fabricated.
+
+> **Scope:** The code runs end-to-end on synthetic smoke-test data or properly formatted real TON_IoT/IoT-23 flow data. The replay is **not** live Contiki/Cooja routing enforcement. The manuscript's claimed closed-loop outcomes require additional attack firmware and Cooja project files not supplied with the document. See `simulation/README.md`.
+
+## Installation
+
+Python 3.10+ required. For a CPU install:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
+python -m pip install -U pip
+pip install -e '.[test]'
+```
+
+For explanations and XGBoost:
+
+```bash
+pip install -e '.[all]'
+```
+
+CUDA availability depends on separately installing a PyTorch build compatible with your GPU/driver. PyTorch Geometric is **optional**, since graph attention is written in pure PyTorch.
+
+## Confirm installation (synthetic test)
+
+```bash
+python -m pytest -q
+python -m securemeshxai.cli --demo --epochs 2 --max-snapshots 30 --output outputs/demo
+python simulation/replay.py --predictions outputs/demo/predictions.json --output outputs/demo/actions.json
+```
+
+Demo data is procedurally generated solely to demonstrate execution and must never be presented as a benchmark result.
+
+## Real datasets
+
+Download data using the original owners' terms:
+- TON_IoT: https://research.unsw.edu.au/projects/toniot-datasets
+- IoT-23: https://www.stratosphereips.org/datasets-iot23
+
+Use the **network Zeek connection** CSV/TSV/logs, not telemetry-only temperature or power tables. Required fields: timestamp (`ts`), originator (`src_ip` or `id.orig_h`), responder (`dst_ip` or `id.resp_h`) and labels (`label`, `type`, `detailed-label`). Other optional canonical fields are bytes, packets, connection status, protocol, etc. Exact source column mappings are in `src/securemeshxai/datasets.py`. For original Zeek logs the `#fields` header is used automatically.
+
+```bash
+# Binary benchmark (recommended first)
+python -m securemeshxai.cli --data data/raw/ton_network.csv --source ton \
+    --split stratified --epochs 100 --output outputs/ton_binary
+
+# Chronological evaluation, with 5 minute purging at boundaries
+python -m securemeshxai.cli --data data/raw/ton_network.csv --source ton \
+    --split chronological --epochs 100 --output outputs/ton_chrono
+
+# Multiclass (classes inferred from training partition)
+python -m securemeshxai.cli --data data/raw/ton_network.csv --source ton \
+    --multiclass --epochs 100 --output outputs/ton_multiclass
+
+# IoT-23 capture-disjoint experiment
+python -m securemeshxai.cli --data data/raw/iot23/*.log --source iot23 \
+    --split scenario --epochs 100 --output outputs/iot23
+
+# Zero-shot TON-trained binary model evaluated on IoT-23
+python -m securemeshxai.cli --data data/raw/ton_network.csv --source ton \
+    --external data/raw/iot23/*.log --epochs 100 --output outputs/transfer
+
+# Comparators, targeted ablations, explanations
+python -m securemeshxai.cli --data data/raw/ton_network.csv --source ton \
+    --baselines --ablations --explain --epochs 50 --output outputs/full
+
+# Five independent runs
+python scripts/multi_seed.py --data data/raw/ton_network.csv --epochs 100
+```
+
+`--max-rows` (default 250,000) caps input for resource management. **Set to a value covering the complete dataset** for full-scale experiments. `--max-snapshots` is a development limit. Large datasets should be processed on a sufficiently provisioned gateway/workstation.
+
+To evaluate a saved checkpoint on additional input:
+
+```bash
+python scripts/evaluate.py --checkpoint outputs/ton_binary/model.pt \
+    --preprocessor outputs/ton_binary/preprocessor.joblib \
+    --data data/raw/iot23/capture.log --source iot23 \
+    --output outputs/independent_eval.json
+```
+
+### Outputs
+
+Every successful experiment produces `model.pt`, `preprocessor.joblib`, `history.json`, `metrics.json`, `predictions.json`, `manifest.json`; optional `baselines.json`, `ablations.json`, `external_metrics.json`, `explanation.json`. `manifest.json` explicitly marks synthetic demonstrations.
+
+### Important scientific caveats
+
+1. IP endpoint communication graphs **are not** physical radio/link-layer mesh topologies. The 24 aligned features follow Table 4 of the paper. Absent packet counters/headers are represented as zero rather than invented.
+2. The benchmark trust target is `tau* = .8 tau_prev + .2 (1-malicious_originator_fraction)`; it is **label-derived** and not an independent trust measurement. Its labels only enter the target and loss, never the model input. The Cooja independent forwarding/routing-consistency trust evaluation is not claimed.
+3. This implementation uses **node-window** supervised targets and captures endpoint context. Its stratified experiment splits raw flows and reconstructs windows within each partition; this is not identical to a published flow-level result. The leak-controlled setting uses chronological purging; unusual short captures can produce empty splits, which the code rejects instead of silently leaking.
+4. The manuscript does not fully specify how to aggregate multiple flow labels to a node-window, missing temporal windows, or how to infer physical forwarding from Zeek records. This implementation documents the choices: majority positive per originating node-window, zero-pad missing history, connection-state-based forwarding **proxy** for benchmarks.
+5. Some advanced manuscript baselines (EvolveGCN-O; CNN-LSTM and full trust comparator collection), 50-trial Optuna tuning, per-sample neighbor-loader mini-batching and true Contiki closed-loop firmware are **not implemented** here. The provided baseline command implements Decision Tree, Random Forest, SVM, optional XGBoost plus six neural architecture ablations. Do not claim exact reproduction of the manuscript's numerical tables based on this package.
+6. Explanation `shap()` uses GradientExplainer with fixed graph context. Attention weights are diagnostic and validated through edge masking; they are not causal proof. `integrated_gradients()` is a distinct dependency-free method and is not reported as SHAP.
+7. This implementation is a functioning reproducible **research scaffold**, not production intrusion prevention; never use recommendation logs to isolate devices without a separately reviewed control adapter.
+
+## Tests and licensing
+
+`pytest` validates shapes, gradients, data handling, policy transitions and an end-to-end training smoke test. A permissive MIT-style license applies to original code in this repository only; dataset and Contiki code retain their own terms.
