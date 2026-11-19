@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.24373248.svg)](https://doi.org/10.5281/zenodo.24373248)
+
 # SecureMeshXAI
 
 **Executable research implementation** of the proposed SecureMeshXAI temporal–graph intrusion detection and trust management framework.
