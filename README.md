@@ -26,7 +26,7 @@ pip install -e '.[all]'
 
 CUDA availability depends on separately installing a PyTorch build compatible with your GPU/driver. PyTorch Geometric is **optional**, since graph attention is written in pure PyTorch.
 
-## Confirm installation (synthetic test)
+## Confirm installation 
 
 ```bash
 python -m pytest -q
