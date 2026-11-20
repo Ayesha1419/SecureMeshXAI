@@ -4,7 +4,7 @@
 
 **Executable research implementation** of the proposed SecureMeshXAI temporal–graph intrusion detection and trust management framework.
 
-It implements a 2-layer GRU + additive attention, a 2-layer edge-aware 4-head GATv2-style encoder in pure PyTorch, a node-wise gated fusion, multitask IDS/trust heads, per-capture graph snapshots, benchmark label-derived trust proxy, trust/mitigation state machine, classical baselines, ablations, SHAP and LIME explainers, statistical tools, and an offline mitigation-policy replay. No research metrics are embedded or fabricated.
+It implements a 2-layer GRU + additive attention, a 2-layer edge-aware 4-head GATv2-style encoder in pure PyTorch, a node-wise gated fusion, multitask IDS/trust heads, per-capture graph snapshots, benchmark label-derived trust proxy, trust/mitigation state machine, classical baselines, ablations, SHAP and LIME explainers, statistical tools, and an offline mitigation-policy replay. 
 
 
 ## Installation
@@ -33,8 +33,6 @@ python -m pytest -q
 python -m securemeshxai.cli --demo --epochs 2 --max-snapshots 30 --output outputs/demo
 python simulation/replay.py --predictions outputs/demo/predictions.json --output outputs/demo/actions.json
 ```
-
-Demo data is procedurally generated solely to demonstrate execution and must never be presented as a benchmark result.
 
 ## Real datasets
 
