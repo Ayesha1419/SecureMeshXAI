@@ -88,16 +88,6 @@ python scripts/evaluate.py --checkpoint outputs/ton_binary/model.pt \
 
 Every successful experiment produces `model.pt`, `preprocessor.joblib`, `history.json`, `metrics.json`, `predictions.json`, `manifest.json`; optional `baselines.json`, `ablations.json`, `external_metrics.json`, `explanation.json`. `manifest.json` explicitly marks synthetic demonstrations.
 
-### Important scientific caveats
-
-1. IP endpoint communication graphs **are not** physical radio/link-layer mesh topologies. The 24 aligned features follow Table 4 of the paper. Absent packet counters/headers are represented as zero rather than invented.
-2. The benchmark trust target is `tau* = .8 tau_prev + .2 (1-malicious_originator_fraction)`; it is **label-derived** and not an independent trust measurement. Its labels only enter the target and loss, never the model input. The Cooja independent forwarding/routing-consistency trust evaluation is not claimed.
-3. This implementation uses **node-window** supervised targets and captures endpoint context. Its stratified experiment splits raw flows and reconstructs windows within each partition; this is not identical to a published flow-level result. The leak-controlled setting uses chronological purging; unusual short captures can produce empty splits, which the code rejects instead of silently leaking.
-4. The manuscript does not fully specify how to aggregate multiple flow labels to a node-window, missing temporal windows, or how to infer physical forwarding from Zeek records. This implementation documents the choices: majority positive per originating node-window, zero-pad missing history, connection-state-based forwarding **proxy** for benchmarks.
-5. Some advanced manuscript baselines (EvolveGCN-O; CNN-LSTM and full trust comparator collection), 50-trial Optuna tuning, per-sample neighbor-loader mini-batching and true Contiki closed-loop firmware are **not implemented** here. The provided baseline command implements Decision Tree, Random Forest, SVM, optional XGBoost plus six neural architecture ablations. Do not claim exact reproduction of the manuscript's numerical tables based on this package.
-6. Explanation `shap()` uses GradientExplainer with fixed graph context. Attention weights are diagnostic and validated through edge masking; they are not causal proof. `integrated_gradients()` is a distinct dependency-free method and is not reported as SHAP.
-7. This implementation is a functioning reproducible **research scaffold**, not production intrusion prevention; never use recommendation logs to isolate devices without a separately reviewed control adapter.
-
 ## Tests and licensing
 
 `pytest` validates shapes, gradients, data handling, policy transitions and an end-to-end training smoke test. A permissive MIT-style license applies to original code in this repository only; dataset and Contiki code retain their own terms.
